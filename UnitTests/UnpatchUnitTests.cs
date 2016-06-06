@@ -71,7 +71,28 @@ namespace JsonDiffPatchDotNet.UnitTests
 			Assert.AreEqual(value, unpatched.Property("p").Value.ToObject<string>(), "String value");
 		}
 
-		[Test]
+        [Test]
+        public void Unpatch_ObjectApplyEditText_Success2()
+        {
+            var jdp = new JsonDiffPatch(new Options()
+            {
+                MinEfficientTextDiffLength = 10,
+                DiffPatchMatchFactory = () => new DiffMatchPatch.diff_match_patch() { Patch_Margin = 1 }
+            });
+            var left = JObject.Parse(@"{ ""p"" : ""LorOmPiWsumL5Dxo/ o.to%m`t,"" }");
+            var right = JObject.Parse(@"{ ""p"" : ""Lorym0iUWsumL5Dxo/ oZto%m`t,"" }");
+            
+            var patch = jdp.Diff(left, right);
+
+            var unpatched = jdp.Unpatch(right, patch) as JObject;
+
+            Assert.IsNotNull(unpatched, "Patched object");
+            Assert.AreEqual(1, unpatched.Properties().Count(), "Property");
+            Assert.AreEqual(JTokenType.String, unpatched.Property("p").Value.Type, "String Type");
+            Assert.AreEqual(left.Property("p").Value.ToObject<string>(), unpatched.Property("p").Value.ToObject<string>(), "String value");
+        }
+
+        [Test]
 		public void Unpatch_NestedObjectApplyEdit_Success()
 		{
 			var jdp = new JsonDiffPatch();
